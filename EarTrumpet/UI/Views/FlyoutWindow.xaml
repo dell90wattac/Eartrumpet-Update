@@ -78,7 +78,7 @@
                                TextWrapping="Wrap" />
                 </Border>
 
-                <views:DeviceRowView Grid.Row="0" Name="OutputRow" DataContext="{Binding Output}" />
+                <views:DeviceRowView Grid.Row="0" DataContext="{Binding Output}" />
 
                 <Border Grid.Row="1"
                         Height="1"

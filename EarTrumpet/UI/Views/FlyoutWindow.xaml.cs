@@ -81,7 +81,7 @@ namespace EarTrumpet.UI.Views
                     PositionWindowRelativeToTaskbar(taskbar);
 
                     // Focus the first device if available.
-                    OutputRow.Focus();
+                    ContentGrid.FindVisualChild<DeviceRowView>()?.FocusAndRemoveFocusVisual();
 
                     // Prevent showing stale adnorners.
                     this.WaitForKeyboardVisuals(() =>
@@ -94,7 +94,7 @@ namespace EarTrumpet.UI.Views
                     break;
 
                 case FlyoutViewState.Closing_Stage1:
-                    OutputRow.Focus();
+                    ContentGrid.FindVisualChild<DeviceRowView>()?.FocusAndRemoveFocusVisual();
                 
                     if (_viewModel.IsExpandingOrCollapsing)
                     {
