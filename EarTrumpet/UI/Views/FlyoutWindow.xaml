@@ -15,7 +15,6 @@
         Theme:Options.Source="System"
         b:FrameworkElementEx.DisplaySettingsChanged="{Binding DisplaySettingsChanged}"
         b:FrameworkElementEx.FlowDirection="Auto"
-        AllowsTransparency="True"
         Background="Transparent"
         Closing="{Event:Binding OnClosing}"
         Deactivated="{Event:Binding OnDeactivated}"

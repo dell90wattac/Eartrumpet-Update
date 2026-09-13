@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media;
 
 namespace EarTrumpet.Extensions
 {
@@ -33,6 +34,81 @@ namespace EarTrumpet.Extensions
             {
                 int attributeValue = (int)DwmApi.DWM_WINDOW_CORNER_PREFERENCE.DWMWCP_ROUND;
                 DwmApi.DwmSetWindowAttribute(window.GetHandle(), DwmApi.DWMWA_WINDOW_CORNER_PREFERENCE, ref attributeValue, Marshal.SizeOf(attributeValue));
+            }
+        }
+
+        /// <summary>
+        /// Asks the DWM to paint a system backdrop (Mica or Acrylic) behind the
+        /// window, and makes the WPF render surface transparent so it shows.
+        ///
+        /// The DWM refuses both this and DWMWCP_ROUND on layered windows, so the
+        /// caller must not set AllowsTransparency. That is also why
+        /// EnableRoundedCornersIfApplicable silently did nothing on the flyout
+        /// before this existed.
+        /// </summary>
+        /// <returns>True if the backdrop was applied.</returns>
+        // Internal, not public: DwmApi and its nested enum are internal, and a
+        // public method may not expose a less accessible parameter type.
+        internal static bool TryEnableSystemBackdrop(this Window window, DwmApi.DWM_SYSTEMBACKDROP_TYPE backdrop)
+        {
+            if (!Environment.OSVersion.IsAtLeast(OSVersions.Windows11_22H2))
+            {
+                return false;
+            }
+
+            try
+            {
+                // Without this WPF clears the render surface to an opaque colour
+                // and the backdrop never becomes visible.
+                if (PresentationSource.FromVisual(window) is HwndSource source && source.CompositionTarget != null)
+                {
+                    source.CompositionTarget.BackgroundColor = Colors.Transparent;
+                }
+
+                // Negative margins extend the frame across the whole client area,
+                // which is what gives the DWM something to draw the backdrop into.
+                var margins = new DwmApi.MARGINS
+                {
+                    cxLeftWidth = -1,
+                    cxRightWidth = -1,
+                    cyTopHeight = -1,
+                    cyBottomHeight = -1,
+                };
+                DwmApi.DwmExtendFrameIntoClientArea(window.GetHandle(), ref margins);
+
+                int attributeValue = (int)backdrop;
+                DwmApi.DwmSetWindowAttribute(window.GetHandle(), DwmApi.DWMWA_SYSTEMBACKDROP_TYPE, ref attributeValue, Marshal.SizeOf(attributeValue));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Insider builds and future releases have changed the accepted
+                // attribute set before. Falling back to the acrylic path is a
+                // cosmetic loss, not a reason to fail opening the flyout.
+                Trace.WriteLine($"WindowExtensions TryEnableSystemBackdrop Failed: {ex}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Tells the DWM which theme the window is using, so the backdrop and
+        /// any frame it draws are tinted to match.
+        /// </summary>
+        public static void SetImmersiveDarkMode(this Window window, bool isDarkMode)
+        {
+            if (!Environment.OSVersion.IsAtLeast(OSVersions.Windows11))
+            {
+                return;
+            }
+
+            try
+            {
+                int attributeValue = isDarkMode ? 1 : 0;
+                DwmApi.DwmSetWindowAttribute(window.GetHandle(), DwmApi.DWMWA_USE_IMMERSIVE_DARK_MODE, ref attributeValue, Marshal.SizeOf(attributeValue));
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"WindowExtensions SetImmersiveDarkMode Failed: {ex}");
             }
         }
 

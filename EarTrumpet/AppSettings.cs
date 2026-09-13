@@ -166,6 +166,21 @@ namespace EarTrumpet
             set => _settings.Set("UseLogarithmicVolume", value);
         }
 
+        /// <summary>
+        /// Draw the flyout on a DWM system backdrop (Mica) instead of the
+        /// hand-rolled acrylic. Turning this off returns the flyout to the
+        /// Windows 10 acrylic path.
+        ///
+        /// Read once at startup: the choice decides whether the flyout is a
+        /// layered window, and AllowsTransparency cannot be changed after the
+        /// window has a handle. Changes take effect on restart.
+        /// </summary>
+        public bool UseMicaBackdrop
+        {
+            get => _settings.Get("UseMicaBackdrop", true);
+            set => _settings.Set("UseMicaBackdrop", value);
+        }
+
         public WINDOWPLACEMENT? FullMixerWindowPlacement
         {
             get => _settings.Get("FullMixerWindowPlacement", default(WINDOWPLACEMENT?));

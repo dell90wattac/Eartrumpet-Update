@@ -1,4 +1,4 @@
-using EarTrumpet.DataModel.WindowsAudio;
+﻿using EarTrumpet.DataModel.WindowsAudio;
 using EarTrumpet.Diagnosis;
 using EarTrumpet.Extensibility;
 using EarTrumpet.Extensibility.Hosting;
@@ -88,7 +88,7 @@ namespace EarTrumpet
             CollectionViewModel.TrayPropertyChanged += () => _trayIcon.SetTooltip(CollectionViewModel.GetTrayToolTip());
 
             _flyoutViewModel = new FlyoutViewModel(CollectionViewModel, () => _trayIcon.SetFocus(), Settings);
-            FlyoutWindow = new FlyoutWindow(_flyoutViewModel);
+            FlyoutWindow = new FlyoutWindow(_flyoutViewModel, Settings);
             // Initialize the FlyoutWindow last because its Show/Hide cycle will pump messages, causing UI frames
             // to be executed, breaking the assumption that startup is complete.
             FlyoutWindow.Initialize();

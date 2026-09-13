@@ -12,10 +12,24 @@ namespace EarTrumpet.UI.Views
     {
         private readonly IFlyoutViewModel _viewModel;
 
-        public FlyoutWindow(IFlyoutViewModel viewModel)
+        // True once the DWM has taken over painting the window background.
+        // While it is set the acrylic path must stay out of the way: the accent
+        // policy and the system backdrop both draw the backdrop and cannot both
+        // be active on one window.
+        private bool _usesSystemBackdrop;
+
+        public FlyoutWindow(IFlyoutViewModel viewModel, AppSettings settings)
         {
             _viewModel = viewModel;
             DataContext = _viewModel;
+
+            // Must be decided before the window has a handle. A layered window
+            // (AllowsTransparency) is rejected by the DWM for both the system
+            // backdrop and DWMWCP_ROUND, so the two paths are mutually
+            // exclusive and the choice cannot change while running.
+            var wantsSystemBackdrop = settings.UseMicaBackdrop &&
+                Environment.OSVersion.IsAtLeast(OSVersions.Windows11_22H2);
+            AllowsTransparency = !wantsSystemBackdrop;
 
             InitializeComponent();
 
@@ -24,9 +38,25 @@ namespace EarTrumpet.UI.Views
             SourceInitialized += (_, __) =>
             {
                 this.Cloak();
+
+                if (wantsSystemBackdrop)
+                {
+                    // Acrylic rather than Mica: Windows 11 draws flyouts and
+                    // context menus on the transient backdrop, and this window
+                    // is short-lived and taskbar-anchored like they are.
+                    _usesSystemBackdrop = this.TryEnableSystemBackdrop(
+                        DwmApi.DWM_SYSTEMBACKDROP_TYPE.DWMSBT_TRANSIENTWINDOW);
+                }
+
+                // Only reaches the DWM now that the window is not layered.
                 this.EnableRoundedCornersIfApplicable();
+                this.SetImmersiveDarkMode(!Themes.Manager.Current.IsLightTheme);
             };
-            Themes.Manager.Current.ThemeChanged += () => EnableAcrylicIfApplicable(WindowsTaskbar.Current);
+            Themes.Manager.Current.ThemeChanged += () =>
+            {
+                this.SetImmersiveDarkMode(!Themes.Manager.Current.IsLightTheme);
+                EnableAcrylicIfApplicable(WindowsTaskbar.Current);
+            };
         }
 
         public void Initialize()
@@ -205,6 +235,13 @@ namespace EarTrumpet.UI.Views
 
         private void EnableAcrylicIfApplicable(WindowsTaskbar.State taskbar)
         {
+            if (_usesSystemBackdrop)
+            {
+                // The DWM owns the background; applying the accent policy on top
+                // would paint a second backdrop over it.
+                return;
+            }
+
             // Note: Enable when in Opening as well as Open in case we get a theme change during a show cycle.
             if (_viewModel.State == FlyoutViewState.Opening || _viewModel.State == FlyoutViewState.Open)
             {
