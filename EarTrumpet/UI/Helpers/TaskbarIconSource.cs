@@ -74,43 +74,41 @@ namespace EarTrumpet.UI.Helpers
         {
             if (_settings.UseLegacyIcon)
             {
-                kind = IconKind.EarTrumpet;
+                return LoadIcon(SystemSettings.IsSystemLightTheme ? IconKind.EarTrumpet_LightTheme : IconKind.EarTrumpet);
             }
 
             try
             {
-                if (System.Windows.SystemParameters.HighContrast)
-                {
-                    using (var icon = LoadIcon(kind))
-                    {
-                        return ColorIconForHighContrast(icon, kind, _isMouseOver);
-                    }
-                }
-                else if (SystemSettings.IsSystemLightTheme)
-                {
-                    if (kind == IconKind.EarTrumpet)
-                    {
-                        return LoadIcon(IconKind.EarTrumpet_LightTheme);
-                    }
-                    else
-                    {
-                        using (var icon = LoadIcon(kind))
-                        {
-                            return ColorIconForLightTheme(icon, kind);
-                        }
-                    }
-                }
-                else
-                {
-                    return LoadIcon(kind);
-                }
+                var size = User32.GetSystemMetricsForDpi(User32.SystemMetrics.SM_CXSMICON, WindowsTaskbar.Dpi);
+                var device = _collection.Default;
+
+                return TrayIconRenderer.RenderLevel(
+                    size,
+                    GetForegroundColor(),
+                    device?.Volume ?? 0,
+                    device != null && device.IsMuted,
+                    device != null);
             }
-            // Legacy fallback if SndVolSSD.dll icons are unavailable.
-            catch (Exception ex) when (kind != IconKind.EarTrumpet)
+            catch (Exception ex)
             {
-                Trace.WriteLine($"TaskbarIconSource LoadIcon: {ex}");
-                return SelectAndLoadIcon(IconKind.EarTrumpet);
+                // Never leave the notification area without an icon.
+                Trace.WriteLine($"TaskbarIconSource RenderLevel Failed: {ex}");
+                return LoadIcon(SystemSettings.IsSystemLightTheme ? IconKind.EarTrumpet_LightTheme : IconKind.EarTrumpet);
             }
+        }
+
+        private Color GetForegroundColor()
+        {
+            if (System.Windows.SystemParameters.HighContrast)
+            {
+                var system = _isMouseOver
+                    ? System.Windows.SystemColors.HighlightTextColor
+                    : System.Windows.SystemColors.WindowTextColor;
+                return Color.FromArgb(system.A, system.R, system.G, system.B);
+            }
+
+            // The taskbar follows the system theme rather than the app theme.
+            return SystemSettings.IsSystemLightTheme ? Color.Black : Color.White;
         }
 
         private static Icon LoadIcon(IconKind kind)
@@ -140,23 +138,23 @@ namespace EarTrumpet.UI.Helpers
 
         private string GetHash() =>
             $"kind={_kind} " +
+            $"level={GetLevelBucket()} " +
             $"{(System.Windows.SystemParameters.HighContrast ? $"hc=true mouse={_isMouseOver} " : "")}" +
             $"dpi={WindowsTaskbar.Dpi} " +
             $"isSysLight={SystemSettings.IsSystemLightTheme} " +
             $"isLegacy={_settings.UseLegacyIcon}";
 
-        // Only fill part of the icon, so we can preserve the red X.
-        private static double GetIconFillPercent(IconKind kind) => kind == IconKind.NoDevice ? 0.4 : 1;
-
-        private static Icon ColorIconForLightTheme(Icon darkIcon, IconKind kind)
+        // Only the lit-bar count can change the drawing, so only it belongs in
+        // the hash.
+        private int GetLevelBucket()
         {
-            return IconHelper.ColorIcon(darkIcon, GetIconFillPercent(kind), System.Windows.Media.Colors.Black);
-        }
+            var device = _collection.Default;
+            if (device == null || device.IsMuted)
+            {
+                return -1;
+            }
 
-        private static Icon ColorIconForHighContrast(Icon darkIcon, IconKind kind, bool isMouseOver)
-        {
-            return IconHelper.ColorIcon(darkIcon, GetIconFillPercent(kind),
-                isMouseOver ? System.Windows.SystemColors.HighlightTextColor : System.Windows.SystemColors.WindowTextColor);
+            return device.Volume == 0 ? 0 : (int)Math.Ceiling(device.Volume / 25f);
         }
 
         private static IconKind IconKindFromDeviceCollection(DeviceCollectionViewModel collectionViewModel)

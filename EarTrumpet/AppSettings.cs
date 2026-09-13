@@ -167,6 +167,18 @@ namespace EarTrumpet
         }
 
         /// <summary>
+        /// Show a second notification area icon that switches the default
+        /// output device on click. Read at startup; adding or removing a tray
+        /// icon mid-session is not worth the bookkeeping for a setting nobody
+        /// toggles twice.
+        /// </summary>
+        public bool ShowDeviceCycleTrayIcon
+        {
+            get => _settings.Get("ShowDeviceCycleTrayIcon", true);
+            set => _settings.Set("ShowDeviceCycleTrayIcon", value);
+        }
+
+        /// <summary>
         /// Draw the flyout on a DWM system backdrop (Mica) instead of the
         /// hand-rolled acrylic. Turning this off returns the flyout to the
         /// Windows 10 acrylic path.

@@ -99,7 +99,8 @@
         <!--  Mute, level, readout.  -->
         <Grid Grid.Row="2"
               Height="{DynamicResource Mutable_DeviceItemCellHeight}"
-              Margin="8,0,8,0">
+              Margin="8,0,8,0"
+              Visibility="{Binding ShowsVolume, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="{DynamicResource Mutable_IconCellWidth}" />
                 <ColumnDefinition Width="*" />

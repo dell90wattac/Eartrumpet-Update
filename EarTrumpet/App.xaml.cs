@@ -39,6 +39,7 @@ namespace EarTrumpet
         private ShellNotifyIcon _trayIcon;
         private WindowHolder _mixerWindow;
         private WindowHolder _settingsWindow;
+        private ShellNotifyIcon _cycleTrayIcon;
         private ErrorReporter _errorReporter;
 
         public static AppSettings Settings { get; private set; }
@@ -131,6 +132,11 @@ namespace EarTrumpet
             _trayIcon.SetTooltip(CollectionViewModel.GetTrayToolTip());
             _trayIcon.IsVisible = true;
 
+            if (Settings.ShowDeviceCycleTrayIcon)
+            {
+                CreateDeviceCycleTrayIcon();
+            }
+
             DisplayFirstRunExperience();
         }
 
@@ -190,6 +196,117 @@ namespace EarTrumpet
 
             // Stop execution because callbacks to the UI thread will likely cause another cascading font error.
             new AutoResetEvent(false).WaitOne();
+        }
+
+        /// <summary>
+        /// A second notification area icon whose whole job is switching output.
+        /// ShellNotifyIcon already creates its own message window per instance,
+        /// and the shell identifies an icon by (hWnd, uID), so two instances
+        /// are two icons with nothing to disambiguate.
+        /// </summary>
+        private void CreateDeviceCycleTrayIcon()
+        {
+            _cycleTrayIcon = new ShellNotifyIcon(new DeviceCycleIconSource(CollectionViewModel));
+            Exit += (_, __) => _cycleTrayIcon.IsVisible = false;
+
+            _cycleTrayIcon.PrimaryInvoke += (_, __) => CycleDefaultPlaybackDevice(1);
+            _cycleTrayIcon.TertiaryInvoke += (_, __) => CycleDefaultPlaybackDevice(-1);
+
+            // Right-click jumps straight to a device instead of stepping past
+            // the ones in between -- each step is a real default-device change,
+            // and every one of them interrupts audio.
+            _cycleTrayIcon.SecondaryInvoke += (_, args) =>
+                _cycleTrayIcon.ShowContextMenu(GetDeviceCycleContextMenuItems(), args.Point);
+
+            CollectionViewModel.TrayPropertyChanged += UpdateDeviceCycleTooltip;
+            UpdateDeviceCycleTooltip();
+
+            _cycleTrayIcon.IsVisible = true;
+        }
+
+        private void UpdateDeviceCycleTooltip()
+        {
+            var devices = GetCycleOrder();
+            var current = CollectionViewModel.Default;
+
+            if (current == null)
+            {
+                _cycleTrayIcon.SetTooltip(EarTrumpet.Properties.Resources.ContextMenuNoDevices);
+                return;
+            }
+
+            var text = $"{EarTrumpet.Properties.Resources.SwitchDeviceToolTip}: {current.DisplayName}";
+
+            var next = GetRelativeDevice(devices, current, 1);
+            if (next != null && next.Id != current.Id)
+            {
+                text += $" → {next.DisplayName}";
+            }
+
+            _cycleTrayIcon.SetTooltip(text);
+        }
+
+        /// <summary>
+        /// Stable order so forward and back mean the same thing between clicks.
+        /// No filtering needed: the manager enumerates DeviceState.ACTIVE and
+        /// drops endpoints as they are disabled or unplugged, so everything
+        /// here is already a device worth switching to.
+        /// </summary>
+        private List<DeviceViewModel> GetCycleOrder() =>
+            CollectionViewModel.AllDevices.OrderBy(d => d.DisplayName, StringComparer.CurrentCultureIgnoreCase).ToList();
+
+        private static DeviceViewModel GetRelativeDevice(List<DeviceViewModel> devices, DeviceViewModel current, int offset)
+        {
+            if (devices.Count == 0)
+            {
+                return null;
+            }
+
+            var index = current == null ? -1 : devices.FindIndex(d => d.Id == current.Id);
+            if (index < 0)
+            {
+                return devices[0];
+            }
+
+            var next = ((index + offset) % devices.Count + devices.Count) % devices.Count;
+            return devices[next];
+        }
+
+        private void CycleDefaultPlaybackDevice(int offset)
+        {
+            var devices = GetCycleOrder();
+            if (devices.Count < 2)
+            {
+                return;
+            }
+
+            var next = GetRelativeDevice(devices, CollectionViewModel.Default, offset);
+            if (next != null && next.Id != CollectionViewModel.Default?.Id)
+            {
+                Trace.WriteLine($"App CycleDefaultPlaybackDevice {next.DisplayName}");
+                next.MakeDefaultDevice();
+            }
+        }
+
+        private IEnumerable<ContextMenuItem> GetDeviceCycleContextMenuItems()
+        {
+            var items = GetCycleOrder().Select(dev => new ContextMenuItem
+            {
+                DisplayName = dev.DisplayName,
+                IsChecked = dev.Id == CollectionViewModel.Default?.Id,
+                Command = new RelayCommand(() => dev.MakeDefaultDevice()),
+            }).ToList();
+
+            if (items.Count == 0)
+            {
+                items.Add(new ContextMenuItem
+                {
+                    DisplayName = EarTrumpet.Properties.Resources.ContextMenuNoDevices,
+                    IsEnabled = false,
+                });
+            }
+
+            return items;
         }
 
         private IEnumerable<ContextMenuItem> GetTrayContextMenuItems()

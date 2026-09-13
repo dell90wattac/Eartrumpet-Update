@@ -33,6 +33,13 @@ namespace EarTrumpet.UI.ViewModels
         public bool CanPick => _collection.AllDevices.Count > 1;
 
         /// <summary>
+        /// Whether this row carries a level control at all. The input row does
+        /// not: switching microphone is the useful action, while its gain is
+        /// better left to Windows or to whichever app is listening.
+        /// </summary>
+        public bool ShowsVolume { get; }
+
+        /// <summary>
         /// Whether releasing this row's slider sounds the system feedback tone
         /// -- the "dong" that tells you how loud you just set things. True for
         /// playback only: the tone comes out of the speakers, so playing it
@@ -59,10 +66,11 @@ namespace EarTrumpet.UI.ViewModels
         private readonly DeviceCollectionViewModel _collection;
         private bool _isOpen;
 
-        public DevicePickerViewModel(DeviceCollectionViewModel collection, string kindLabel, bool playsVolumeFeedback)
+        public DevicePickerViewModel(DeviceCollectionViewModel collection, string kindLabel, bool showsVolume, bool playsVolumeFeedback)
         {
             _collection = collection;
             KindLabel = kindLabel;
+            ShowsVolume = showsVolume;
             PlaysVolumeFeedback = playsVolumeFeedback;
 
             _collection.DefaultChanged += (_, __) =>
