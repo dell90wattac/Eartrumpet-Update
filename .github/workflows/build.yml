@@ -42,12 +42,36 @@ jobs:
           (Get-Content EarTrumpet\App.config -Raw) -replace '\{bugsnag\.apikey\}', '' |
             Set-Content EarTrumpet\App.config -NoNewline
 
+      - name: Locate Windows.winmd
+        shell: pwsh
+        run: |
+          # The project hardcodes two Windows SDK paths, neither of which exists
+          # on a hosted runner -- they ship newer kits only. Without this the
+          # WinRT reference resolves to nothing and every `using Windows.*`
+          # fails with CS0246. Pick the newest kit present and pass it through.
+          $roots = @(
+            "${env:ProgramFiles(x86)}\Windows Kits\10\UnionMetadata",
+            "$env:ProgramFiles\Windows Kits\10\UnionMetadata"
+          )
+          $winmd = Get-ChildItem -Path $roots -Filter Windows.winmd -Recurse -ErrorAction SilentlyContinue |
+            Sort-Object { try { [version]$_.Directory.Name } catch { [version]'0.0.0.0' } } -Descending |
+            Select-Object -First 1
+
+          if (-not $winmd) {
+            Get-ChildItem -Path $roots -ErrorAction SilentlyContinue | Format-Table -AutoSize | Out-String | Write-Host
+            throw "No Windows.winmd found under any Windows Kits UnionMetadata directory."
+          }
+
+          Write-Host "Using $($winmd.FullName)"
+          "WINDOWS_WINMD_PATH=$($winmd.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Build
         shell: cmd
         run: >
           msbuild EarTrumpet\EarTrumpet.csproj
           /p:Platform=%BUILD_PLATFORM%
           /p:Configuration=%BUILD_CONFIGURATION%
+          /p:WindowsWinmdPath="%WINDOWS_WINMD_PATH%"
           /p:OutputPath=%GITHUB_WORKSPACE%\artifacts\EarTrumpet\
           -maxcpucount
 

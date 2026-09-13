@@ -68,6 +68,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath Condition="Exists('$(MSBuildProgramFiles32)\Windows Kits\10\UnionMetadata\Windows.winmd')">$(MSBuildProgramFiles32)\Windows Kits\10\UnionMetadata\Windows.winmd</HintPath>
       <HintPath Condition="Exists('$(MSBuildProgramFiles32)\Windows Kits\10\UnionMetadata\10.0.16299.0\Windows.winmd')">$(MSBuildProgramFiles32)\Windows Kits\10\UnionMetadata\10.0.16299.0\Windows.winmd</HintPath>
+      <!-- Escape hatch for machines whose SDK is not at either path above, such
+           as CI runners that ship only newer kits. Last non-empty HintPath wins,
+           so setting WindowsWinmdPath overrides the two guesses. -->
+      <HintPath Condition="'$(WindowsWinmdPath)' != '' And Exists('$(WindowsWinmdPath)')">$(WindowsWinmdPath)</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
