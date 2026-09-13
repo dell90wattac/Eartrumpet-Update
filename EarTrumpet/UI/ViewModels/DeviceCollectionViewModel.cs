@@ -66,9 +66,15 @@ namespace EarTrumpet.UI.ViewModels
             if (Default != null)
             {
                 Default.PropertyChanged -= OnDefaultDevicePropertyChanged;
+                Default.IsDefault = false;
             }
 
             Default = device;
+
+            if (Default != null)
+            {
+                Default.IsDefault = true;
+            }
             DefaultChanged?.Invoke(this, Default);
 
             if (Default != null)

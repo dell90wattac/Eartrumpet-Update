@@ -28,56 +28,6 @@
         WindowStyle="None"
         FontFamily="{StaticResource AppFontFamily}">
     <Window.Resources>
-        <Style x:Key="ExpandCollapseButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="VerticalAlignment" Value="Top" />
-            <Setter Property="Theme:Brush.Foreground" Value="Theme=Text, HighContrast=ControlText" />
-            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisualStyle}" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border"
-                                Background="{TemplateBinding Background}"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter RecognizesAccessKey="True" />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="true">
-                    <Setter Property="Theme:Brush.Background" Value="Theme=#20FFFFFF, HighContrast=Highlight" />
-                    <Setter Property="Theme:Brush.Foreground" Value="Theme=ApplicationText{Theme}Theme, HighContrast=HighlightText" />
-                </Trigger>
-                <Trigger Property="IsPressed" Value="true">
-                    <Setter Property="Theme:Brush.Background" Value="Theme=#2FFFFFFF, HighContrast=Highlight" />
-                    <Setter Property="Theme:Brush.Foreground" Value="Theme=ApplicationText{Theme}Theme, HighContrast=HighlightText" />
-                </Trigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsMouseOver" Value="True" />
-                        <Condition Property="Theme:OS.IsWindows11" Value="True" />
-                    </MultiTrigger.Conditions>
-                    <MultiTrigger.Setters>
-                        <Setter Property="Theme:Brush.Background" Value="Theme=Control{Theme}SelectHighlightHover, HighContrast=Highlight" />
-                        <Setter Property="Theme:Brush.Foreground" Value="Theme=ApplicationText{Theme}Theme, HighContrast=HighlightText" />
-                    </MultiTrigger.Setters>
-                </MultiTrigger>
-                <MultiTrigger>
-                    <MultiTrigger.Conditions>
-                        <Condition Property="IsPressed" Value="True" />
-                        <Condition Property="Theme:OS.IsWindows11" Value="True" />
-                    </MultiTrigger.Conditions>
-                    <MultiTrigger.Setters>
-                        <Setter Property="Theme:Brush.Background" Value="Theme=Control{Theme}SelectHighlightHover/0.20, HighContrast=Highlight" />
-                        <Setter Property="Theme:Brush.Foreground" Value="Theme=ApplicationText{Theme}Theme, HighContrast=HighlightText" />
-                    </MultiTrigger.Setters>
-                </MultiTrigger>
-            </Style.Triggers>
-        </Style>
-
         <Style x:Key="{x:Type ScrollViewer}"
                BasedOn="{StaticResource {x:Type ScrollViewer}}"
                TargetType="{x:Type ScrollViewer}">
@@ -86,24 +36,38 @@
             <Setter Property="Focusable" Value="False" />
             <Setter Property="Margin" Value="0" />
         </Style>
-        <DataTemplate DataType="{x:Type vm:DeviceViewModel}">
-            <views:DeviceView Width="{StaticResource WindowAndItemSize}"
-                              Device="{Binding}"
-                              IsDisplayNameVisible="{Binding IsDisplayNameVisible}" />
-        </DataTemplate>
     </Window.Resources>
     <Grid x:Name="LayoutRoot">
-        <ScrollViewer Name="BaseVisual" VerticalScrollBarVisibility="Auto">
-            <Grid Name="ContentGrid" VerticalAlignment="Top">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-                <Border VerticalAlignment="Center" Theme:Brush.Background="FlyoutBackground">
+        <ScrollViewer Grid.Row="0" Name="BaseVisual" VerticalScrollBarVisibility="Auto">
+            <Grid Name="ContentGrid" VerticalAlignment="Top">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!--  Nothing to show: no endpoints at all.  -->
+                <Border Grid.Row="0"
+                        Grid.RowSpan="4"
+                        VerticalAlignment="Center"
+                        Theme:Brush.Background="FlyoutBackground">
                     <Border.Style>
                         <Style TargetType="Border">
                             <Setter Property="Visibility" Value="Collapsed" />
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Devices.Count}" Value="0">
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding Output.HasDevice}" Value="False" />
+                                        <Condition Binding="{Binding Input.HasDevice}" Value="False" />
+                                    </MultiDataTrigger.Conditions>
                                     <Setter Property="Visibility" Value="Visible" />
-                                </DataTrigger>
+                                </MultiDataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
@@ -113,83 +77,56 @@
                                Text="{x:Static resx:Resources.NoDevicesPanelContent}"
                                TextWrapping="Wrap" />
                 </Border>
-                <Grid>
+
+                <views:DeviceRowView Grid.Row="0" Name="OutputRow" DataContext="{Binding Output}" />
+
+                <Border Grid.Row="1"
+                        Height="1"
+                        Margin="12,0,12,0"
+                        Theme:Brush.Background="Theme=#14FFFFFF, Light=#0F000000, HighContrast=WindowText"
+                        Visibility="{Binding Input.HasDevice, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                <views:DeviceRowView Grid.Row="2" DataContext="{Binding Input}" />
+
+                <!--  Apps on the endpoint currently in use for playback.  -->
+                <Grid Grid.Row="3" Margin="0,2,0,6">
                     <Grid.Style>
                         <Style TargetType="Grid">
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Devices.Count}" Value="0">
+                                <DataTrigger Binding="{Binding Output.Default.Apps.Count}" Value="0">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Output.HasDevice}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Grid.Style>
-                    <ItemsControl Name="DevicesList"
-                                  FocusVisualStyle="{x:Null}"
-                                  IsTabStop="False"
-                                  ItemsSource="{Binding Devices}" />
-                    <Button Height="{DynamicResource Mutable_DeviceTitleCellHeight}"
-                            Command="{Binding ExpandCollapse}"
-                            IsEnabled="{Binding CanExpand}">
-                        <Button.Style>
-                            <Style BasedOn="{StaticResource ExpandCollapseButtonStyle}" TargetType="{x:Type Button}">
-                                <Style.Triggers>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding CanExpand}" Value="True" />
-                                            <Condition Binding="{Binding IsExpanded}" Value="True" />
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="AutomationProperties.Name" Value="{x:Static resx:Resources.CollapseAccessibleText}" />
-                                    </MultiDataTrigger>
-                                    <MultiDataTrigger>
-                                        <MultiDataTrigger.Conditions>
-                                            <Condition Binding="{Binding CanExpand}" Value="True" />
-                                            <Condition Binding="{Binding IsExpanded}" Value="False" />
-                                        </MultiDataTrigger.Conditions>
-                                        <Setter Property="AutomationProperties.Name" Value="{x:Static resx:Resources.ExpandAccessibleText}" />
-                                    </MultiDataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-                        <Button.Content>
-                            <Grid>
-                                <TextBlock Margin="12,0,32,0"
-                                           HorizontalAlignment="Left"
-                                           Theme:Brush.Foreground="{Binding (Theme:Brush.Foreground), RelativeSource={RelativeSource AncestorType=Button}}"
-                                           Style="{StaticResource DeviceTitleTextStyle}"
-                                           Text="{Binding DeviceNameText}"
-                                           TextTrimming="CharacterEllipsis" />
-                                <TextBlock Margin="{StaticResource WindowMargin}"
-                                           HorizontalAlignment="Right"
-                                           Theme:Brush.Foreground="{Binding (Theme:Brush.Foreground), RelativeSource={RelativeSource AncestorType=Button}}"
-                                           FontSize="{DynamicResource Mutable_ExpandCollapseButtonGlyphFontSize}">
-                                    <TextBlock.Style>
-                                        <Style BasedOn="{StaticResource GlyphTextBlockStyle}" TargetType="{x:Type TextBlock}">
-                                            <Style.Triggers>
-                                                <MultiDataTrigger>
-                                                    <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding CanExpand}" Value="True" />
-                                                        <Condition Binding="{Binding IsExpanded}" Value="True" />
-                                                    </MultiDataTrigger.Conditions>
-                                                    <Setter Property="Text" Value="&#xe011;" />
-                                                </MultiDataTrigger>
-                                                <MultiDataTrigger>
-                                                    <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding CanExpand}" Value="True" />
-                                                        <Condition Binding="{Binding IsExpanded}" Value="False" />
-                                                    </MultiDataTrigger.Conditions>
-                                                    <Setter Property="Text" Value="&#xe010;" />
-                                                </MultiDataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Grid>
-                        </Button.Content>
-                    </Button>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0"
+                            Height="1"
+                            Margin="12,0,12,6"
+                            Theme:Brush.Background="Theme=#14FFFFFF, Light=#0F000000, HighContrast=WindowText" />
+
+                    <StackPanel Grid.Row="1">
+                        <TextBlock Margin="20,0,20,4"
+                                   FontSize="{DynamicResource Mutable_DeviceKindLabelFontSize}"
+                                   Theme:Brush.Foreground="GrayText"
+                                   Text="{x:Static resx:Resources.AppsHeaderText}" />
+                        <ListView Name="AppList"
+                                  Margin="{StaticResource VolumeAppListMargin}"
+                                  AutomationProperties.Name="{x:Static resx:Resources.AppsListAccessibleText}"
+                                  ItemsSource="{Binding Output.Default.Apps, Mode=OneWay}" />
+                    </StackPanel>
                 </Grid>
             </Grid>
         </ScrollViewer>
-        <Border Name="LightDismissBorder"
+        <Border Grid.Row="0"
+                Name="LightDismissBorder"
                 Theme:Brush.Background="Background"
                 PreviewMouseDown="{Event:Binding OnLightDismissBorderPreviewMouseDown}">
             <Border.Style>
@@ -279,6 +216,40 @@
                 </Border.Background>
             </Border>
         </Border>
+        <!--
+            The Windows audio panels, one click from the flyout. Each of these
+            used to be two levels deep in the tray right-click menu, behind a
+            submenu hover.
+        -->
+        <Border Grid.Row="1"
+                Padding="6"
+                Theme:Brush.Background="Theme=#0FFFFFFF, Light=#08000000, HighContrast=Window"
+                Theme:Brush.BorderBrush="Theme=#18FFFFFF, Light=#14000000, HighContrast=WindowText"
+                BorderThickness="0,1,0,0">
+            <UniformGrid Columns="5" Rows="1">
+                <Button Command="{Binding OpenPlaybackDevices}"
+                        Style="{StaticResource QuickActionButtonStyle}"
+                        Tag="&#xE995;"
+                        Content="{x:Static resx:Resources.QuickActionPlaybackText}" />
+                <Button Command="{Binding OpenRecordingDevices}"
+                        Style="{StaticResource QuickActionButtonStyle}"
+                        Tag="&#xE720;"
+                        Content="{x:Static resx:Resources.QuickActionRecordingText}" />
+                <Button Command="{Binding OpenLegacyMixer}"
+                        Style="{StaticResource QuickActionButtonStyle}"
+                        Tag="&#xE9E9;"
+                        Content="{x:Static resx:Resources.QuickActionMixerText}" />
+                <Button Command="{Binding OpenSoundSettings}"
+                        Style="{StaticResource QuickActionButtonStyle}"
+                        Tag="&#xE7F3;"
+                        Content="{x:Static resx:Resources.QuickActionSoundText}" />
+                <Button Command="{Binding OpenSettings}"
+                        Style="{StaticResource QuickActionButtonStyle}"
+                        Tag="&#xE713;"
+                        Content="{x:Static resx:Resources.QuickActionSettingsText}" />
+            </UniformGrid>
+        </Border>
+
         <ctl:AppPopup IsOpen="{Binding Dialog.IsVisible, Mode=TwoWay}"
                       PlacementTarget="{Binding Dialog.Source}"
                       Style="{StaticResource AppPopup}">

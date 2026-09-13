@@ -39,6 +39,24 @@ namespace EarTrumpet.UI.ViewModels
         public string InterfaceName => ((IAudioDeviceWindowsAudio)_device).InterfaceName;
         public ObservableCollection<IAppItemViewModel> Apps { get; }
 
+        /// <summary>
+        /// Whether this endpoint is the one currently in use for its data flow.
+        /// Maintained by DeviceCollectionViewModel as the default moves, so the
+        /// picker can mark it without every row watching the manager.
+        /// </summary>
+        public bool IsDefault
+        {
+            get => _isDefault;
+            set
+            {
+                if (_isDefault != value)
+                {
+                    _isDefault = value;
+                    RaisePropertyChanged(nameof(IsDefault));
+                }
+            }
+        }
+
         public bool IsDisplayNameVisible
         {
             get => _isDisplayNameVisible;
@@ -68,6 +86,7 @@ namespace EarTrumpet.UI.ViewModels
         protected readonly IAudioDevice _device;
         protected readonly IAudioDeviceManager _deviceManager;
         protected readonly WeakReference<DeviceCollectionViewModel> _parent;
+        private bool _isDefault;
         private bool _isDisplayNameVisible;
         private DeviceIconKind _iconKind;
 

@@ -386,6 +386,27 @@ Open [https://eartrumpet.app/jmp/fixfonts] now?</value>
   <data name="DefaultPlaybackDeviceText" xml:space="preserve">
     <value>Default playback device</value>
   </data>
+  <data name="SwitchDeviceToolTip" xml:space="preserve">
+    <value>Switch device</value>
+  </data>
+  <data name="QuickActionPlaybackText" xml:space="preserve">
+    <value>Playback</value>
+  </data>
+  <data name="QuickActionRecordingText" xml:space="preserve">
+    <value>Recording</value>
+  </data>
+  <data name="QuickActionMixerText" xml:space="preserve">
+    <value>Mixer</value>
+  </data>
+  <data name="QuickActionSoundText" xml:space="preserve">
+    <value>Sound</value>
+  </data>
+  <data name="QuickActionSettingsText" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="AppsHeaderText" xml:space="preserve">
+    <value>Apps</value>
+  </data>
   <data name="DeviceKindInputText" xml:space="preserve">
     <value>Input</value>
   </data>

@@ -103,6 +103,8 @@
 
             <ctl:MenuItemTemplateSelector x:Key="MenuSelector" />
 
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
             <Thickness x:Key="PopupBorderThickness">1</Thickness>
             <bcl:Double x:Key="WindowBlurRadius">10</bcl:Double>
             <bcl:Double x:Key="WindowAndItemSize">360</bcl:Double>
@@ -591,6 +593,79 @@
                                                   Focusable="False"
                                                   RecognizesAccessKey="True"
                                                   SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!--  Rounded hover/press fill, shared by the flyout's clickable rows.  -->
+            <Style x:Key="FlyoutRowButtonStyle" TargetType="{x:Type Button}">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="SnapsToDevicePixels" Value="True" />
+                <Setter Property="Theme:Brush.Foreground" Value="Theme=Text, HighContrast=ControlText" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisualStyle}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="Bd"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="{StaticResource ControlCornerRadius}"
+                                    SnapsToDevicePixels="True">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  RecognizesAccessKey="True"
+                                                  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Theme:Brush.Background" Value="Theme=#14FFFFFF, Light=#0F000000, HighContrast=Highlight" />
+                        <Setter Property="Theme:Brush.Foreground" Value="Theme=ApplicationText{Theme}Theme, HighContrast=HighlightText" />
+                    </Trigger>
+                    <Trigger Property="IsPressed" Value="True">
+                        <Setter Property="Theme:Brush.Background" Value="Theme=#0AFFFFFF, Light=#08000000, HighContrast=Highlight" />
+                        <Setter Property="Theme:Brush.Foreground" Value="Theme=ApplicationText{Theme}Theme, HighContrast=HighlightText" />
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Theme:Brush.Background" Value="Transparent" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!--  Quick bar button: glyph over label. The glyph codepoint rides
+                  on Tag so each button stays a single line at the call site.  -->
+            <Style x:Key="QuickActionButtonStyle"
+                   BasedOn="{StaticResource FlyoutRowButtonStyle}"
+                   TargetType="{x:Type Button}">
+                <Setter Property="Margin" Value="1" />
+                <Setter Property="Padding" Value="2,7,2,6" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="Bd"
+                                    Padding="{TemplateBinding Padding}"
+                                    Background="{TemplateBinding Background}"
+                                    CornerRadius="{StaticResource ControlCornerRadius}"
+                                    SnapsToDevicePixels="True">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock HorizontalAlignment="Center"
+                                               FontFamily="{StaticResource SymbolFontFamily}"
+                                               FontSize="16"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               Text="{TemplateBinding Tag}" />
+                                    <TextBlock Margin="0,4,0,0"
+                                               HorizontalAlignment="Center"
+                                               FontSize="10"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               Text="{TemplateBinding Content}"
+                                               TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
                             </Border>
                         </ControlTemplate>
                     </Setter.Value>

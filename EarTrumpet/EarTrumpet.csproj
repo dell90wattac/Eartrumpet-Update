@@ -372,6 +372,9 @@
     <Compile Include="UI\Views\DeviceView.xaml.cs">
       <DependentUpon>DeviceView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Views\DeviceRowView.xaml.cs">
+      <DependentUpon>DeviceRowView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Extensions\FloatExtensions.cs" />
     <Compile Include="Extensions\IconExtensions.cs" />
     <Compile Include="DataModel\WindowsAudio\Internal\AudioDevice.cs" />
@@ -419,6 +422,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\Views\DeviceView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Views\DeviceRowView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -38,8 +38,19 @@ namespace EarTrumpet.UI.ViewModels
         /// </summary>
         public DevicePickerViewModel Input { get; }
 
+        /// <summary>
+        /// The Windows audio panels, lifted out of the tray right-click
+        /// submenu they used to sit two levels deep in.
+        /// </summary>
+        public ICommand OpenPlaybackDevices { get; }
+        public ICommand OpenRecordingDevices { get; }
+        public ICommand OpenLegacyMixer { get; }
+        public ICommand OpenSoundSettings { get; }
+        public ICommand OpenSettings { get; }
+
         private readonly DeviceCollectionViewModel _mainViewModel;
         private readonly DeviceCollectionViewModel _recordingViewModel;
+        private readonly Action _openSettings;
         private readonly DispatcherTimer _deBounceTimer;
         private readonly Dispatcher _currentDispatcher = Dispatcher.CurrentDispatcher;
         private readonly Action _returnFocusToTray;
@@ -48,9 +59,10 @@ namespace EarTrumpet.UI.ViewModels
         private MouseHook _mh;
         private Rect _winRect;
 
-        public FlyoutViewModel(DeviceCollectionViewModel mainViewModel, DeviceCollectionViewModel recordingViewModel, Action returnFocusToTray, AppSettings settings)
+        public FlyoutViewModel(DeviceCollectionViewModel mainViewModel, DeviceCollectionViewModel recordingViewModel, Action returnFocusToTray, Action openSettings, AppSettings settings)
         {
             _settings = settings;
+            _openSettings = openSettings;
             _recordingViewModel = recordingViewModel;
             Output = new DevicePickerViewModel(mainViewModel, Properties.Resources.DeviceKindOutputText);
             Input = new DevicePickerViewModel(recordingViewModel, Properties.Resources.DeviceKindInputText);
@@ -75,8 +87,40 @@ namespace EarTrumpet.UI.ViewModels
             });
             DisplaySettingsChanged = new RelayCommand(() => BeginClose(InputType.Command));
 
+            // Each of these opens a window of its own, so the flyout gets out
+            // of the way first rather than being left behind it.
+            OpenPlaybackDevices = CreateQuickAction(() => LegacyControlPanelHelper.Open("playback"));
+            OpenRecordingDevices = CreateQuickAction(() => LegacyControlPanelHelper.Open("recording"));
+            OpenLegacyMixer = CreateQuickAction(LegacyControlPanelHelper.StartLegacyAudioMixer);
+            OpenSoundSettings = CreateQuickAction(() => SettingsPageHelper.Open("sound"));
+            OpenSettings = CreateQuickAction(() => _openSettings?.Invoke());
+
             _mh = new MouseHook();
             _mh.MouseWheelEvent += OnMouseWheelEvent;
+        }
+
+        /// <summary>
+        /// Closes the flyout, then runs the action once it is out of the way.
+        /// StartLegacyAudioMixer in particular positions itself at the cursor,
+        /// so it wants the flyout gone before it opens.
+        /// </summary>
+        private ICommand CreateQuickAction(Action action)
+        {
+            return new RelayCommand(() =>
+            {
+                BeginClose(InputType.Command);
+                _currentDispatcher.BeginInvoke((Action)(() =>
+                {
+                    try
+                    {
+                        action();
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine($"FlyoutViewModel QuickAction Failed: {ex}");
+                    }
+                }), DispatcherPriority.Background, null);
+            });
         }
 
         public void UpdateWindowPos(double top, double left, double height, double width)

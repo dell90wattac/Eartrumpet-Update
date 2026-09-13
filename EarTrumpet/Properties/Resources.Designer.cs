@@ -585,6 +585,69 @@ namespace EarTrumpet.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Switch device.
+        /// </summary>
+        public static string SwitchDeviceToolTip {
+            get {
+                return ResourceManager.GetString("SwitchDeviceToolTip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Playback.
+        /// </summary>
+        public static string QuickActionPlaybackText {
+            get {
+                return ResourceManager.GetString("QuickActionPlaybackText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Recording.
+        /// </summary>
+        public static string QuickActionRecordingText {
+            get {
+                return ResourceManager.GetString("QuickActionRecordingText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mixer.
+        /// </summary>
+        public static string QuickActionMixerText {
+            get {
+                return ResourceManager.GetString("QuickActionMixerText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sound.
+        /// </summary>
+        public static string QuickActionSoundText {
+            get {
+                return ResourceManager.GetString("QuickActionSoundText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Settings.
+        /// </summary>
+        public static string QuickActionSettingsText {
+            get {
+                return ResourceManager.GetString("QuickActionSettingsText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apps.
+        /// </summary>
+        public static string AppsHeaderText {
+            get {
+                return ResourceManager.GetString("AppsHeaderText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Input.
         /// </summary>
         public static string DeviceKindInputText {
