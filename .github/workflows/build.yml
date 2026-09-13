@@ -1,0 +1,59 @@
+name: Build EarTrumpet
+
+# Personal build pipeline. Produces a loose, unpackaged, unsigned EarTrumpet.exe
+# as a downloadable artifact -- no MSIX, no code signing, no Store plumbing.
+
+on:
+  push:
+    branches: ["**"]
+    paths-ignore:
+      - "**/*.md"
+      - "Graphics/**"
+  workflow_dispatch:
+
+env:
+  BUILD_CONFIGURATION: Release
+  BUILD_PLATFORM: x86
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # GitVersionTask reads history and tags to stamp the assembly version.
+          fetch-depth: 0
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Set up NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore EarTrumpet.vs15.sln
+
+      - name: Clear Bugsnag API key placeholder
+        shell: pwsh
+        run: |
+          # Upstream CI substitutes their own crash-reporting key here. A private
+          # build has no key and should not report to anyone, so blank it out.
+          (Get-Content EarTrumpet\App.config -Raw) -replace '\{bugsnag\.apikey\}', '' |
+            Set-Content EarTrumpet\App.config -NoNewline
+
+      - name: Build
+        shell: cmd
+        run: >
+          msbuild EarTrumpet\EarTrumpet.csproj
+          /p:Platform=%BUILD_PLATFORM%
+          /p:Configuration=%BUILD_CONFIGURATION%
+          /p:OutputPath=%GITHUB_WORKSPACE%\artifacts\EarTrumpet\
+          -maxcpucount
+
+      - name: Upload EarTrumpet
+        uses: actions/upload-artifact@v4
+        with:
+          name: EarTrumpet
+          path: artifacts/EarTrumpet
+          if-no-files-found: error
