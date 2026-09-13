@@ -1,4 +1,7 @@
+using EarTrumpet.UI.Helpers;
+using EarTrumpet.UI.ViewModels;
 using System.Windows.Documents;
+using System.Windows.Input;
 
 namespace EarTrumpet.UI.Views
 {
@@ -29,6 +32,29 @@ namespace EarTrumpet.UI.Views
                 {
                     adornerLayer.Remove(adorner);
                 }
+            }
+        }
+
+        private void PlayVolumeFeedback()
+        {
+            // Output only -- the tone plays through the speakers, so sounding
+            // it for a microphone level would say nothing about what changed.
+            if ((DataContext as DevicePickerViewModel)?.PlaysVolumeFeedback == true)
+            {
+                SystemSoundsHelper.PlayBeepSound.Execute(null);
+            }
+        }
+
+        private void VolumeSlider_TouchUp(object sender, TouchEventArgs e)
+        {
+            PlayVolumeFeedback();
+        }
+
+        private void VolumeSlider_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                PlayVolumeFeedback();
             }
         }
     }

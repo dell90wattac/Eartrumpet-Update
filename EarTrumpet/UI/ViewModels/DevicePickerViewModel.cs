@@ -32,6 +32,14 @@ namespace EarTrumpet.UI.ViewModels
         /// <summary>Nothing to choose between with one endpoint.</summary>
         public bool CanPick => _collection.AllDevices.Count > 1;
 
+        /// <summary>
+        /// Whether releasing this row's slider sounds the system feedback tone
+        /// -- the "dong" that tells you how loud you just set things. True for
+        /// playback only: the tone comes out of the speakers, so playing it
+        /// while dragging a microphone level tells you nothing.
+        /// </summary>
+        public bool PlaysVolumeFeedback { get; }
+
         public bool IsOpen
         {
             get => _isOpen;
@@ -51,10 +59,11 @@ namespace EarTrumpet.UI.ViewModels
         private readonly DeviceCollectionViewModel _collection;
         private bool _isOpen;
 
-        public DevicePickerViewModel(DeviceCollectionViewModel collection, string kindLabel)
+        public DevicePickerViewModel(DeviceCollectionViewModel collection, string kindLabel, bool playsVolumeFeedback)
         {
             _collection = collection;
             KindLabel = kindLabel;
+            PlaysVolumeFeedback = playsVolumeFeedback;
 
             _collection.DefaultChanged += (_, __) =>
             {

@@ -64,8 +64,8 @@ namespace EarTrumpet.UI.ViewModels
             _settings = settings;
             _openSettings = openSettings;
             _recordingViewModel = recordingViewModel;
-            Output = new DevicePickerViewModel(mainViewModel, Properties.Resources.DeviceKindOutputText);
-            Input = new DevicePickerViewModel(recordingViewModel, Properties.Resources.DeviceKindInputText);
+            Output = new DevicePickerViewModel(mainViewModel, Properties.Resources.DeviceKindOutputText, playsVolumeFeedback: true);
+            Input = new DevicePickerViewModel(recordingViewModel, Properties.Resources.DeviceKindInputText, playsVolumeFeedback: false);
             IsExpanded = _settings.IsExpanded;
             Dialog = new ModalDialogViewModel();
             Devices = new ObservableCollection<DeviceViewModel>();

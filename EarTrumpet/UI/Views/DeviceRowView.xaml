@@ -150,6 +150,8 @@
                               AutomationProperties.Name="{Binding Default.DisplayName}"
                               PeakValue1="{Binding Default.PeakValue1}"
                               PeakValue2="{Binding Default.PeakValue2}"
+                              PreviewMouseUp="VolumeSlider_MouseUp"
+                              PreviewTouchUp="VolumeSlider_TouchUp"
                               Style="{StaticResource {x:Type Slider}}"
                               Value="{Binding Default.Volume, Mode=TwoWay}" />
 
