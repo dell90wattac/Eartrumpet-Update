@@ -24,7 +24,8 @@
         Style="{StaticResource DialogWindowStyle}"
         TextOptions.TextFormattingMode="Display"
         UseLayoutRounding="True"
-        WindowStartupLocation="CenterOwner">
+        WindowStartupLocation="CenterOwner"
+        FontFamily="{StaticResource AppFontFamily}">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:DeviceViewModel}">
             <views:DeviceView Width="{StaticResource WindowAndItemSize}" Device="{Binding}" />

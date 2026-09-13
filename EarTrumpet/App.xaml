@@ -113,28 +113,59 @@
             <Thickness x:Key="NoItemsPaneMargin">24</Thickness>
             <bcl:Double x:Key="MutedOpacity">0.4</bcl:Double>
 
+            <!--  Windows 11 rounding. Windows 10 was square throughout, so before
+                  this the whole app contained exactly two CornerRadius values.  -->
+            <CornerRadius x:Key="ControlCornerRadius">4</CornerRadius>
+            <CornerRadius x:Key="WindowCornerRadius">8</CornerRadius>
+            <CornerRadius x:Key="PopupCornerRadius">8</CornerRadius>
+            <Thickness x:Key="RowPadding">8,0,8,0</Thickness>
+            <Thickness x:Key="ContentPadding">12,0,12,0</Thickness>
+
+            <!--  Windows 11 ships Segoe UI Variable; Segoe UI is the Windows 10
+                  face and remains the fallback. WPF resolves the first family it
+                  can find, so a machine without the variable face degrades to
+                  exactly what the app rendered before rather than to a default.  -->
+            <FontFamily x:Key="AppFontFamily">Segoe UI Variable Text, Segoe UI</FontFamily>
+            <FontFamily x:Key="AppDisplayFontFamily">Segoe UI Variable Display, Segoe UI</FontFamily>
+            <FontFamily x:Key="AppSmallFontFamily">Segoe UI Variable Small, Segoe UI</FontFamily>
+            <!--  Segoe Fluent Icons is the Windows 11 icon face. It keeps the
+                  codepoints this app already uses, so MDL2 is a safe fallback.  -->
+            <FontFamily x:Key="SymbolFontFamily">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+
             <bcl:String x:Key="EarTrumpetIconLight">pack://application:,,,/EarTrumpet;component/Assets/Icon-Light.ico</bcl:String>
             <bcl:String x:Key="EarTrumpetIconDark">pack://application:,,,/EarTrumpet;component/Assets/Icon-Dark.ico</bcl:String>
 
-            <Style x:Key="Windows10FocusVisualStyle">
+            <Style x:Key="FocusVisualStyle">
                 <Setter Property="Control.Template">
                     <Setter.Value>
                         <ControlTemplate>
                             <Grid>
-                                <Rectangle Theme:Brush.Stroke="Theme=ApplicationBackground{Theme}Theme, HighContrast=Window" StrokeThickness="3" />
-                                <Rectangle Theme:Brush.Stroke="Text" StrokeThickness="2" />
+                                <Rectangle RadiusX="4"
+                                           RadiusY="4"
+                                           Theme:Brush.Stroke="Theme=ApplicationBackground{Theme}Theme, HighContrast=Window"
+                                           StrokeThickness="3" />
+                                <Rectangle RadiusX="4"
+                                           RadiusY="4"
+                                           Theme:Brush.Stroke="Text"
+                                           StrokeThickness="2" />
                             </Grid>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
-            <Style x:Key="LargeWindows10FocusVisualStyle">
+            <Style x:Key="LargeFocusVisualStyle">
                 <Setter Property="Control.Template">
                     <Setter.Value>
                         <ControlTemplate>
                             <Grid Margin="-3" SnapsToDevicePixels="True">
-                                <Rectangle Theme:Brush.Stroke="Theme=ApplicationBackground{Theme}Theme, HighContrast=Window" StrokeThickness="3" />
-                                <Rectangle Theme:Brush.Stroke="Text" StrokeThickness="2" />
+                                <Rectangle RadiusX="6"
+                                           RadiusY="6"
+                                           Theme:Brush.Stroke="Theme=ApplicationBackground{Theme}Theme, HighContrast=Window"
+                                           StrokeThickness="3" />
+                                <Rectangle RadiusX="6"
+                                           RadiusY="6"
+                                           Theme:Brush.Stroke="Text"
+                                           StrokeThickness="2" />
                             </Grid>
                         </ControlTemplate>
                     </Setter.Value>
@@ -170,7 +201,7 @@
             <Style x:Key="{x:Type ListViewItem}" TargetType="ListViewItem">
                 <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Setter Property="OverridesDefaultStyle" Value="True" />
-                <Setter Property="FocusVisualStyle" Value="{StaticResource Windows10FocusVisualStyle}" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisualStyle}" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ListBoxItem">
@@ -187,7 +218,7 @@
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                 <Setter Property="VerticalContentAlignment" Value="Stretch" />
                 <Setter Property="Background" Value="Transparent" />
-                <Setter Property="FocusVisualStyle" Value="{StaticResource Windows10FocusVisualStyle}" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisualStyle}" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ListViewItem}">
@@ -234,7 +265,7 @@
             </Style>
             <Style x:Key="CaptionButtonStyle" TargetType="Button">
                 <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
-                <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+                <Setter Property="FontFamily" Value="{StaticResource SymbolFontFamily}" />
                 <Setter Property="FontSize" Value="10" />
                 <Setter Property="FontWeight" Value="ExtraLight" />
                 <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -345,7 +376,9 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type RepeatButton}">
                             <Border Background="Transparent">
-                                <Border Height="2" Background="{TemplateBinding Foreground}" />
+                                <Border Height="{DynamicResource Mutable_SliderTrackHeight}"
+                                        Background="{TemplateBinding Foreground}"
+                                        CornerRadius="2" />
                             </Border>
                         </ControlTemplate>
                     </Setter.Value>
@@ -357,12 +390,30 @@
                 <Setter Property="Width" Value="{DynamicResource Mutable_SliderThumbWidth}" />
                 <Setter Property="Template">
                     <Setter.Value>
+                        <!--  Windows 11 thumb: an accent disc with a concentric dot
+                              punched out of it in the surface colour. The dot grows
+                              on hover and shrinks on press; the outer disc never
+                              changes size, so the track geometry stays stable.  -->
                         <ControlTemplate TargetType="{x:Type Thumb}">
-                            <Border Name="Thumb"
-                                    Background="{TemplateBinding Foreground}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="0"
-                                    CornerRadius="5" />
+                            <Grid Background="Transparent">
+                                <Ellipse Name="ThumbOuter" Fill="{TemplateBinding Foreground}" />
+                                <Ellipse Name="ThumbInner"
+                                         Width="{DynamicResource Mutable_SliderThumbInnerSize}"
+                                         Height="{DynamicResource Mutable_SliderThumbInnerSize}"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         Theme:Brush.Fill=":=Background, Flyout:FlyoutBackground, :HighContrast=Window, Flyout:HighContrast=Window" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ThumbInner" Property="Width" Value="{DynamicResource Mutable_SliderThumbInnerHoverSize}" />
+                                    <Setter TargetName="ThumbInner" Property="Height" Value="{DynamicResource Mutable_SliderThumbInnerHoverSize}" />
+                                </Trigger>
+                                <Trigger Property="IsDragging" Value="True">
+                                    <Setter TargetName="ThumbInner" Property="Width" Value="{DynamicResource Mutable_SliderThumbInnerPressedSize}" />
+                                    <Setter TargetName="ThumbInner" Property="Height" Value="{DynamicResource Mutable_SliderThumbInnerPressedSize}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -376,7 +427,7 @@
                 <Setter Property="VerticalAlignment" Value="Center" />
                 <Setter Property="IsTabStop" Value="False" />
                 <Setter Property="Interval" Value="1" />
-                <Setter Property="Height" Value="32" />
+                <Setter Property="Height" Value="{DynamicResource Mutable_SliderHeight}" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Setter Property="SmallChange" Value="1" />
                 <Setter Property="LargeChange" Value="10" />
@@ -385,7 +436,7 @@
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Slider}">
                             <Grid>
-                                <Border Name="TrackBackground" Height="2" />
+                                <Border Name="TrackBackground" Height="{DynamicResource Mutable_SliderTrackHeight}" CornerRadius="2" />
                                 <Track Name="PART_Track">
                                     <Track.DecreaseRepeatButton>
                                         <RepeatButton Name="SliderLeft"
@@ -415,17 +466,28 @@
                                     </Track.IncreaseRepeatButton>
                                 </Track>
 
-                                <Border Name="PeakMeter1"
-                                        Height="2"
-                                        Margin="0,-2,0,0"
-                                        HorizontalAlignment="Left"
-                                        Theme:Brush.Background="Theme=ApplicationText{Theme}Theme, HighContrast=HotTrack" />
+                                <!--  Peak meters sit inside the track rather than
+                                      straddling it: two rows of a track-height grid,
+                                      so each fills exactly half however the track
+                                      metric changes. Only Width is set from code.  -->
+                                <Grid Height="{DynamicResource Mutable_SliderTrackHeight}" VerticalAlignment="Center">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
 
-                                <Border Name="PeakMeter2"
-                                        Height="2"
-                                        Margin="0,1,0,0"
-                                        HorizontalAlignment="Left"
-                                        Theme:Brush.Background="Theme=ApplicationText{Theme}Theme, HighContrast=HotTrack" />
+                                    <Border Name="PeakMeter1"
+                                            Grid.Row="0"
+                                            HorizontalAlignment="Left"
+                                            Opacity="0.55"
+                                            Theme:Brush.Background="Theme=ApplicationText{Theme}Theme, HighContrast=HotTrack" />
+
+                                    <Border Name="PeakMeter2"
+                                            Grid.Row="1"
+                                            HorizontalAlignment="Left"
+                                            Opacity="0.55"
+                                            Theme:Brush.Background="Theme=ApplicationText{Theme}Theme, HighContrast=HotTrack" />
+                                </Grid>
                             </Grid>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsEnabled" Value="False">
@@ -439,7 +501,7 @@
             <Style x:Key="GlyphTextBlockStyle" TargetType="{x:Type TextBlock}">
                 <Setter Property="HorizontalAlignment" Value="Center" />
                 <Setter Property="VerticalAlignment" Value="Center" />
-                <Setter Property="FontFamily" Value="Segoe MDL2 Assets" />
+                <Setter Property="FontFamily" Value="{StaticResource SymbolFontFamily}" />
                 <Setter Property="Theme:Brush.Foreground" Value="Light=ApplicationTextLightTheme, Dark=ApplicationTextDarkTheme" />
             </Style>
             <Style x:Key="TextBlockStyle" TargetType="{x:Type TextBlock}">
@@ -662,7 +724,7 @@
                                             BorderThickness="1">
                                         <TextBlock x:Name="CheckMark"
                                                    Theme:Brush.Foreground="Theme={Theme}BaseMedium, HighContrast=ControlText"
-                                                   FontFamily="Segoe MDL2 Assets"
+                                                   FontFamily="{StaticResource SymbolFontFamily}"
                                                    SnapsToDevicePixels="False"
                                                    Text="{TemplateBinding Tag}"
                                                    Visibility="Hidden" />
@@ -681,7 +743,7 @@
                                             Visibility="Collapsed">
                                         <TextBlock x:Name="GlyphText"
                                                    Theme:Brush.Foreground="Theme={Theme}BaseMedium, HighContrast=ControlText"
-                                                   FontFamily="Segoe MDL2 Assets"
+                                                   FontFamily="{StaticResource SymbolFontFamily}"
                                                    SnapsToDevicePixels="False"
                                                    Text="&#xE0E3;" />
                                     </Border>
@@ -779,7 +841,7 @@
                 <Setter Property="Margin" Value="12" />
                 <Setter Property="Height" Value="32" />
                 <Setter Property="MinWidth" Value="90" />
-                <Setter Property="FocusVisualStyle" Value="{StaticResource LargeWindows10FocusVisualStyle}" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource LargeFocusVisualStyle}" />
                 <Setter Property="Theme:Brush.Foreground" Value="Theme={Theme}BaseHigh, HighContrast=ControlText" />
                 <Setter Property="Theme:Brush.BorderBrush" Value="Theme=Transparent, HighContrast=ControlText" />
                 <Setter Property="Theme:Brush.Background" Value="Theme={Theme}BaseLow" />
@@ -821,7 +883,7 @@
                 <Setter Property="FontSize" Value="15" />
                 <Setter Property="Padding" Value="8,0,0,0" />
                 <Setter Property="Margin" Value="12" />
-                <Setter Property="FocusVisualStyle" Value="{StaticResource LargeWindows10FocusVisualStyle}" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource LargeFocusVisualStyle}" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type CheckBox}">
@@ -896,7 +958,7 @@
                 <Setter Property="FontSize" Value="15" />
                 <Setter Property="Padding" Value="8,0,0,0" />
                 <Setter Property="Margin" Value="12" />
-                <Setter Property="FocusVisualStyle" Value="{StaticResource LargeWindows10FocusVisualStyle}" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource LargeFocusVisualStyle}" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type CheckBox}">
@@ -917,7 +979,7 @@
                                         Theme:Brush.BorderBrush="Theme={Theme}BaseMediumHigh, HighContrast=Highlight"
                                         BorderThickness="2">
                                     <TextBlock x:Name="optionMark"
-                                               FontFamily="Segoe MDL2 Assets"
+                                               FontFamily="{StaticResource SymbolFontFamily}"
                                                FontSize="16"
                                                Foreground="White"
                                                Opacity="0"
@@ -979,7 +1041,7 @@
             <Style TargetType="{x:Type RadioButton}">
                 <Setter Property="FontSize" Value="15" />
                 <Setter Property="Theme:Brush.Foreground" Value="Text" />
-                <Setter Property="FocusVisualStyle" Value="{StaticResource LargeWindows10FocusVisualStyle}" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource LargeFocusVisualStyle}" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type RadioButton}">
@@ -1046,7 +1108,7 @@
                 <Setter Property="Theme:Brush.Foreground" Value="Theme=SystemAccent, HighContrast=HotTrack" />
                 <Setter Property="TextBlock.TextDecorations" Value="{x:Null}" />
                 <Setter Property="FontSize" Value="15" />
-                <Setter Property="FocusVisualStyle" Value="{StaticResource LargeWindows10FocusVisualStyle}" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource LargeFocusVisualStyle}" />
             </Style>
             <Style TargetType="{x:Type TextBox}">
                 <Setter Property="Theme:Brush.Background" Value="Light=LightChromeWhite/0.4, Dark=DarkChromeBlackMediumLow" />
@@ -1306,7 +1368,7 @@
                 <Setter Property="Theme:Brush.Foreground" Value="Theme=Text, HighContrast=ControlText" />
                 <Setter Property="b:ComboBoxEx.ItemClickEnabled" Value="True" />
                 <Setter Property="BorderThickness" Value="0" />
-                <Setter Property="FocusVisualStyle" Value="{StaticResource Windows10FocusVisualStyle}" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisualStyle}" />
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ComboBoxItem}">
@@ -1343,7 +1405,7 @@
                 </Setter>
             </Style>
             <Style x:Key="AddButtonStyle" TargetType="{x:Type Button}">
-                <Setter Property="FocusVisualStyle" Value="{StaticResource Windows10FocusVisualStyle}" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisualStyle}" />
                 <Setter Property="SnapsToDevicePixels" Value="True" />
                 <Setter Property="HorizontalContentAlignment" Value="Center" />
                 <Setter Property="Theme:Brush.Foreground" Value="Text" />
@@ -1401,7 +1463,7 @@
                 </Setter>
             </Style>
             <Style x:Key="InvisibleButtonStyle" TargetType="Button">
-                <Setter Property="FocusVisualStyle" Value="{StaticResource Windows10FocusVisualStyle}" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisualStyle}" />
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="Theme:Brush.Foreground" Value="Text" />
                 <Setter Property="BorderBrush" Value="{x:Null}" />
@@ -1988,7 +2050,7 @@
                                                 <Border Background="{TemplateBinding Background}">
                                                     <TextBlock HorizontalAlignment="Center"
                                                                VerticalAlignment="Center"
-                                                               FontFamily="Segoe MDL2 Assets"
+                                                               FontFamily="{StaticResource SymbolFontFamily}"
                                                                FontSize="{Binding GlyphFontSize}"
                                                                Foreground="{TemplateBinding Foreground}"
                                                                Text="{Binding Glyph}" />
@@ -2009,7 +2071,7 @@
                                                 <Setter Property="Background" Value="Transparent" />
                                                 <Setter Property="VerticalAlignment" Value="Center" />
                                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                                                <Setter Property="FocusVisualStyle" Value="{StaticResource Windows10FocusVisualStyle}" />
+                                                <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisualStyle}" />
                                                 <Setter Property="Theme:Brush.Foreground" Value="Text" />
                                                 <Style.Triggers>
                                                     <Trigger Property="IsMouseOver" Value="true">

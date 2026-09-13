@@ -25,7 +25,8 @@
         Style="{StaticResource DialogWindowStyle}"
         TextOptions.TextFormattingMode="Display"
         UseLayoutRounding="True"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        FontFamily="{StaticResource AppFontFamily}">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:EarTrumpetShortcutsPageViewModel}">
             <StackPanel Orientation="Vertical">
@@ -379,7 +380,7 @@
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Height" Value="48" />
-            <Setter Property="FocusVisualStyle" Value="{StaticResource Windows10FocusVisualStyle}" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisualStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ListViewItem}">
@@ -432,7 +433,7 @@
             <Setter Property="Width" Value="250" />
             <Setter Property="Margin" Value="12" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="FocusVisualStyle" Value="{StaticResource Windows10FocusVisualStyle}" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisualStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ListViewItem}">

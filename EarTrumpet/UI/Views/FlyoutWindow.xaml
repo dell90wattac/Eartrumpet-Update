@@ -26,7 +26,8 @@
         SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display"
         UseLayoutRounding="True"
-        WindowStyle="None">
+        WindowStyle="None"
+        FontFamily="{StaticResource AppFontFamily}">
     <Window.Resources>
         <Style x:Key="ExpandCollapseButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent" />
@@ -34,7 +35,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="VerticalAlignment" Value="Top" />
             <Setter Property="Theme:Brush.Foreground" Value="Theme=Text, HighContrast=ControlText" />
-            <Setter Property="FocusVisualStyle" Value="{StaticResource Windows10FocusVisualStyle}" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisualStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">

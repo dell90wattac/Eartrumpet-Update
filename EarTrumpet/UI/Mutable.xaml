@@ -3,17 +3,29 @@
                     xmlns:bcl="clr-namespace:System;assembly=mscorlib"
                     xmlns:win="clr-namespace:System.Windows;assembly=PresentationFramework">
 
-    <bcl:Double x:Key="Mutable_AppIconSize">24</bcl:Double>
-    <bcl:Double x:Key="Mutable_SliderThumbHeight">24</bcl:Double>
-    <bcl:Double x:Key="Mutable_SliderThumbWidth">8</bcl:Double>
-    <win:GridLength x:Key="Mutable_IconCellWidth">65</win:GridLength>
-    <win:GridLength x:Key="Mutable_VolumeCellWidth">63</win:GridLength>
-    <bcl:Double x:Key="Mutable_DeviceTitleCellHeight">44</bcl:Double>
-    <bcl:Double x:Key="Mutable_AppItemCellHeight">44</bcl:Double>
-    <bcl:Double x:Key="Mutable_DeviceItemCellHeight">54</bcl:Double>
+    <!--  Row and cell metrics. Tightened from the Windows 10 proportions.  -->
+    <bcl:Double x:Key="Mutable_AppIconSize">22</bcl:Double>
+    <win:GridLength x:Key="Mutable_IconCellWidth">40</win:GridLength>
+    <win:GridLength x:Key="Mutable_VolumeCellWidth">42</win:GridLength>
+    <bcl:Double x:Key="Mutable_DeviceTitleCellHeight">34</bcl:Double>
+    <bcl:Double x:Key="Mutable_AppItemCellHeight">36</bcl:Double>
+    <bcl:Double x:Key="Mutable_DeviceItemCellHeight">40</bcl:Double>
+
+    <!--  Slider. Windows 11 uses a circle with a concentric inner dot that
+          grows on hover and shrinks on press, not the Windows 10 pill.  -->
+    <bcl:Double x:Key="Mutable_SliderThumbHeight">18</bcl:Double>
+    <bcl:Double x:Key="Mutable_SliderThumbWidth">18</bcl:Double>
+    <bcl:Double x:Key="Mutable_SliderThumbInnerSize">8</bcl:Double>
+    <bcl:Double x:Key="Mutable_SliderThumbInnerHoverSize">10</bcl:Double>
+    <bcl:Double x:Key="Mutable_SliderThumbInnerPressedSize">6</bcl:Double>
+    <bcl:Double x:Key="Mutable_SliderTrackHeight">4</bcl:Double>
+    <bcl:Double x:Key="Mutable_SliderHeight">28</bcl:Double>
+
+    <!--  Type. The oversized volume readout was the loudest Windows 10 tell.  -->
     <bcl:Double x:Key="Mutable_ExpandCollapseButtonGlyphFontSize">12</bcl:Double>
-    <bcl:Double x:Key="Mutable_AppVolumeTextFontSize">18</bcl:Double>
-    <bcl:Double x:Key="Mutable_DeviceVolumeTextFontSize">24</bcl:Double>
-    <bcl:Double x:Key="Mutable_LargeWindowTextFontSize">15</bcl:Double>
+    <bcl:Double x:Key="Mutable_AppVolumeTextFontSize">12</bcl:Double>
+    <bcl:Double x:Key="Mutable_DeviceVolumeTextFontSize">13</bcl:Double>
+    <bcl:Double x:Key="Mutable_LargeWindowTextFontSize">14</bcl:Double>
     <bcl:Double x:Key="Mutable_AppIconTextFontSize">16</bcl:Double>
+    <bcl:Double x:Key="Mutable_DeviceKindLabelFontSize">10.5</bcl:Double>
 </ResourceDictionary>

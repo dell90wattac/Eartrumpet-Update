@@ -17,7 +17,8 @@
         Style="{StaticResource DialogWindowStyle}"
         TextOptions.TextFormattingMode="Display"
         UseLayoutRounding="True"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        FontFamily="{StaticResource AppFontFamily}">
     <Grid>
         <DockPanel LastChildFill="True">
             <Grid DockPanel.Dock="Top">
