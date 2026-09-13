@@ -27,7 +27,19 @@ namespace EarTrumpet.UI.ViewModels
         public InputType LastInput { get; private set; }
         public ICommand DisplaySettingsChanged { get; }
 
+        /// <summary>Default playback endpoint, and the list to switch it.</summary>
+        public DevicePickerViewModel Output { get; }
+
+        /// <summary>
+        /// Same, for capture. The data layer has always supported recording
+        /// endpoints -- WindowsAudioFactory.Create(AudioDeviceKind.Recording)
+        /// is what the Actions add-on uses -- but the flyout never asked for
+        /// them, so switching a microphone meant leaving the app.
+        /// </summary>
+        public DevicePickerViewModel Input { get; }
+
         private readonly DeviceCollectionViewModel _mainViewModel;
+        private readonly DeviceCollectionViewModel _recordingViewModel;
         private readonly DispatcherTimer _deBounceTimer;
         private readonly Dispatcher _currentDispatcher = Dispatcher.CurrentDispatcher;
         private readonly Action _returnFocusToTray;
@@ -36,9 +48,12 @@ namespace EarTrumpet.UI.ViewModels
         private MouseHook _mh;
         private Rect _winRect;
 
-        public FlyoutViewModel(DeviceCollectionViewModel mainViewModel, Action returnFocusToTray, AppSettings settings)
+        public FlyoutViewModel(DeviceCollectionViewModel mainViewModel, DeviceCollectionViewModel recordingViewModel, Action returnFocusToTray, AppSettings settings)
         {
             _settings = settings;
+            _recordingViewModel = recordingViewModel;
+            Output = new DevicePickerViewModel(mainViewModel, Properties.Resources.DeviceKindOutputText);
+            Input = new DevicePickerViewModel(recordingViewModel, Properties.Resources.DeviceKindInputText);
             IsExpanded = _settings.IsExpanded;
             Dialog = new ModalDialogViewModel();
             Devices = new ObservableCollection<DeviceViewModel>();
@@ -243,6 +258,7 @@ namespace EarTrumpet.UI.ViewModels
             {
                 case FlyoutViewState.Open:
                     _mainViewModel.OnTrayFlyoutShown();
+                    _recordingViewModel.OnTrayFlyoutShown();
 
                     if (_closedDuringOpen)
                     {
@@ -252,6 +268,11 @@ namespace EarTrumpet.UI.ViewModels
                     break;
                 case FlyoutViewState.Closing_Stage1:
                     _mainViewModel.OnTrayFlyoutHidden();
+                    _recordingViewModel.OnTrayFlyoutHidden();
+
+                    // Don't reopen with a stale list hanging open.
+                    Output.Close();
+                    Input.Close();
                     Dialog.IsVisible = false;
 
                     if (LastInput == InputType.Keyboard && !IsExpandingOrCollapsing)

@@ -386,6 +386,12 @@ Open [https://eartrumpet.app/jmp/fixfonts] now?</value>
   <data name="DefaultPlaybackDeviceText" xml:space="preserve">
     <value>Default playback device</value>
   </data>
+  <data name="DeviceKindInputText" xml:space="preserve">
+    <value>Input</value>
+  </data>
+  <data name="DeviceKindOutputText" xml:space="preserve">
+    <value>Output</value>
+  </data>
   <data name="DeviceEventTrigger_AddText" xml:space="preserve">
     <value>An audio device is added, removed, set as default, ...</value>
   </data>

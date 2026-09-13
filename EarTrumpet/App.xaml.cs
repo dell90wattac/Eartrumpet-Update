@@ -31,6 +31,7 @@ namespace EarTrumpet
 
         public FlyoutWindow FlyoutWindow { get; private set; }
         public DeviceCollectionViewModel CollectionViewModel { get; private set; }
+        public DeviceCollectionViewModel RecordingCollectionViewModel { get; private set; }
 
         private static readonly Stopwatch s_appTimer = Stopwatch.StartNew();
         private FlyoutViewModel _flyoutViewModel;
@@ -83,11 +84,18 @@ namespace EarTrumpet
             deviceManager.Loaded += (_, __) => CompleteStartup();
             CollectionViewModel = new DeviceCollectionViewModel(deviceManager, Settings);
 
+            // The capture side of the audio stack was always here; nothing in
+            // the main UI had asked for it. DeviceCollectionViewModel takes an
+            // IAudioDeviceManager, so the recording endpoints need no new
+            // plumbing to reach the flyout.
+            var recordingDeviceManager = WindowsAudioFactory.Create(AudioDeviceKind.Recording);
+            RecordingCollectionViewModel = new DeviceCollectionViewModel(recordingDeviceManager, Settings);
+
             _trayIcon = new ShellNotifyIcon(new TaskbarIconSource(CollectionViewModel, Settings));
             Exit += (_, __) => _trayIcon.IsVisible = false;
             CollectionViewModel.TrayPropertyChanged += () => _trayIcon.SetTooltip(CollectionViewModel.GetTrayToolTip());
 
-            _flyoutViewModel = new FlyoutViewModel(CollectionViewModel, () => _trayIcon.SetFocus(), Settings);
+            _flyoutViewModel = new FlyoutViewModel(CollectionViewModel, RecordingCollectionViewModel, () => _trayIcon.SetFocus(), Settings);
             FlyoutWindow = new FlyoutWindow(_flyoutViewModel, Settings);
             // Initialize the FlyoutWindow last because its Show/Hide cycle will pump messages, causing UI frames
             // to be executed, breaking the assumption that startup is complete.

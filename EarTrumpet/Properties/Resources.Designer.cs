@@ -585,6 +585,24 @@ namespace EarTrumpet.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Input.
+        /// </summary>
+        public static string DeviceKindInputText {
+            get {
+                return ResourceManager.GetString("DeviceKindInputText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Output.
+        /// </summary>
+        public static string DeviceKindOutputText {
+            get {
+                return ResourceManager.GetString("DeviceKindOutputText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An audio device is added, removed, set as default, ....
         /// </summary>
         public static string DeviceEventTrigger_AddText {
