@@ -1,0 +1,65 @@
+name: Build EarTrumpet
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# Needed so the run can publish a GitHub Release (a permanent home for Setup.exe)
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # GitVersionTask runs during the build and needs full (non-shallow) history
+          fetch-depth: 0
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Set up NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Ensure .NET Framework 4.6.2 targeting pack
+        continue-on-error: true
+        run: choco install netfx-4.6.2-devpack -y --no-progress
+
+      - name: Restore NuGet packages
+        run: nuget restore EarTrumpet.vs15.sln
+
+      - name: Build loose EarTrumpet.exe
+        shell: cmd
+        run: >-
+          msbuild EarTrumpet\EarTrumpet.csproj
+          /p:Platform=x86 /p:Configuration=Release /p:Channel=Chocolatey
+          /p:OutputPath=%GITHUB_WORKSPACE%\artifacts\
+          -maxcpucount
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          & $iscc "/DSourceDir=$env:GITHUB_WORKSPACE\artifacts" installer\EarTrumpet.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: EarTrumpet-Win11-Setup
+          path: installer/Output/EarTrumpet-Win11-Setup.exe
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: EarTrumpet Win11 refresh (build ${{ github.run_number }})
+          body: Run EarTrumpet-Win11-Setup.exe to install. Unsigned, so SmartScreen will ask once (More info, then Run anyway).
+          files: installer/Output/EarTrumpet-Win11-Setup.exe
